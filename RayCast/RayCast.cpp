@@ -51,8 +51,8 @@ Lumiere posLumierSurfacique{ Vec3<double>{ 250,20,100 }, Vec3<double>{ 255, 255,
 
 //----------------------Objets----------------------
 Sphere sphere{ 100, Vec3<double>{150, 300, 300}, white, 1 };
-Sphere sphere1{ 20, Vec3<double>{400, 300, 200}, white, 0 };
-Sphere sphere2{ 30, Vec3<double>{350, 200, 100}, white, 0 };
+Sphere sphere1{ 20, Vec3<double>{400, 200, 400}, white, 0 };
+Sphere sphere2{ 30, Vec3<double>{350, 200, 300}, white, 0 };
 
 Sphere spherefond{ 9500, Vec3<double>{300, 300, 10100}, red, 0 };
 Sphere spheresol{ 9500, Vec3<double>{300, 10100, 500}, white, 0 };
