@@ -44,6 +44,12 @@ Vec3<T> operator-(const Vec3<T>& a, const Vec3<T>& b) {
 	return Vec3<T>{ a.x - b.x, a.y - b.y, a.z - b.z };
 };
 
+//Operateur de soustraction
+template<typename T>
+Vec3<T> operator-(const Vec3<T>& a, double b) {
+	return Vec3<T>{ a.x - b, a.y - b, a.z - b };
+};
+
 //Operateur d'addition
 template<typename T>
 Vec3<T> operator+(const Vec3<T>& a, const Vec3<T>& b) {
