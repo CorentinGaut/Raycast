@@ -1,0 +1,7 @@
+﻿  RayCast.cpp
+  Génération de code en cours
+  Previous IPDB not found, fall back to full compilation.
+D:\Gamagora\Raycast\RayCast\RayCast.cpp(56): warning C4715: 'intersect' : les chemins de contrôle ne retournent pas tous une valeur
+  All 275 functions were compiled because no usable IPDB/IOBJ from previous compilation was found.
+  Fin de la génération du code
+  RayCast.vcxproj -> D:\Gamagora\Raycast\x64\Release\RayCast.exe

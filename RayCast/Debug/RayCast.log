@@ -1,0 +1,5 @@
+﻿  RayCast.cpp
+D:\Gamagora\Synthese\RayCast\RayCast\RayCast.cpp(99): warning C4018: '<' : incompatibilité signed/unsigned
+D:\Gamagora\Synthese\RayCast\RayCast\RayCast.cpp(126): warning C4018: '<' : incompatibilité signed/unsigned
+D:\Gamagora\Synthese\RayCast\RayCast\RayCast.cpp(56): warning C4715: 'intersect' : les chemins de contrôle ne retournent pas tous une valeur
+  RayCast.vcxproj -> D:\Gamagora\Synthese\RayCast\Debug\RayCast.exe

@@ -1,0 +1,3 @@
+﻿  RayCast.cpp
+D:\Gamagora\Raycast\RayCast\RayCast.cpp(56): warning C4715: 'intersect' : les chemins de contrôle ne retournent pas tous une valeur
+  RayCast.vcxproj -> D:\Gamagora\Raycast\x64\Debug\RayCast.exe
