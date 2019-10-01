@@ -121,14 +121,16 @@ int main() {
 		LumieresScenes.push_back(lightSu);
 	}
 
-	
+	Vec3<double> positionPerspective{ 300, 300, 600 };
 
 	for (int y = 0; y < H; ++y) {
 		for (int x = 0; x < W; ++x) {
 			pix_col = black;
-			Ray ray{ 
-				Vec3<double>{(double)x, (double)y, 0}, 
-				Vec3<double>{0, 0, 1} 
+			Vec3<double> directionCamera = normalize(Vec3<double>{ (double)x, (double)y, 0 } - positionPerspective);
+			//cout << directionCamera.x << endl;
+			Ray ray{
+				Vec3<double>{(double)x, (double)y, 0},
+				Vec3<double>{0,0,1}
 			};
 
 			
@@ -166,7 +168,8 @@ int main() {
 					}
 
 					if (!rebondIntersecte_min.has_value()) {
-						pix_col = pix_col + ((LumieresScenes[l].couleur) * dt / norm(DirectionLumiere) * LumieresScenes[l].intensite);
+						//pix_col = pix_col + ((LumieresScenes[l].couleur) * dt / norm(DirectionLumiere) * LumieresScenes[l].intensite);
+						pix_col = pix_col + objetsScenes[index].couleur * LumieresScenes[l].couleur * dt / (norm(DirectionLumiere) * LumieresScenes.size());
 					}
 					else
 					{
