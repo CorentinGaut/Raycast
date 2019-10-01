@@ -76,20 +76,26 @@ int main() {
 	const int nbLumieresSurface = 50;
 
 	Vec3<double> white{ 255, 255, 255 };
+	Vec3<double> green{ 0, 255, 0 };
 	Vec3<double> black{ 0, 0, 0 };
 	Vec3<double> grey{ 10, 10, 50 };
 	Vec3<double> red{ 255, 0, 0 };
+	Vec3<double> blue{ 0, 0, 255 };
+	Vec3<double> yellow{ 255, 255, 0 };
 
 	Sphere sphere{ 100, Vec3<double>{150, 300, 300}, white };
 	Sphere sphere1{ 20, Vec3<double>{400, 300, 200}, white };
 	Sphere sphere2{ 30, Vec3<double>{350, 200, 100}, white };
 
-	Sphere spherefond{ 9500, Vec3<double>{0, 0, 10000}, red };
-	//Sphere spheresol{ 9500, Vec3<double>{-10000, 0, 0}, red };
+	Sphere spherefond{ 9500, Vec3<double>{300, 300, 10100}, red };
+	Sphere spheresol{ 9500, Vec3<double>{300, 10100, 500}, white };
+	Sphere sphereplafond{ 9500, Vec3<double>{300, -9550, 500}, green };
+	Sphere sphereDroit{ 9500, Vec3<double>{-9550, 300, 500}, blue };
+	Sphere spheregauche{ 9500, Vec3<double>{9550 + 600, 300, 500}, yellow };
 
-	Lumiere light{ Vec3<double>{ 590, 300, 200}, Vec3<double>{ 255, 255, 255}, 100 };
+	Lumiere light{ Vec3<double>{ 590, 300, 100}, Vec3<double>{ 255, 255, 255}, 100 };
 	//Lumiere light1{ Vec3<double>{ 590, 10, 100}, Vec3<double>{ 255, 255, }, 400 };
-	Lumiere posLumierSurfacique{ Vec3<double>{ 250,20,150 }, Vec3<double>{ 255, 255, 255}, 100 };
+	Lumiere posLumierSurfacique{ Vec3<double>{ 250,20,100 }, Vec3<double>{ 255, 255, 255}, 100 };
 
 
 	//ne tête du fichier ppm
@@ -98,16 +104,21 @@ int main() {
 
 	Vec3<double> pix_col(black);
 
+	//----------------------ajout des spheres----------------------
 	vector<Sphere> objetsScenes;
 	objetsScenes.push_back(sphere);
 	objetsScenes.push_back(sphere1);
-	//objetsScenes.push_back(sphere2);
 	objetsScenes.push_back(spherefond);
-	//objetsScenes.push_back(spheresol);
+	objetsScenes.push_back(spheresol);
+	objetsScenes.push_back(sphereplafond);
+	objetsScenes.push_back(sphereDroit);
+	objetsScenes.push_back(spheregauche);
 
-	//ajout des Lumieres
+
+	//----------------------ajout des Lumieres----------------------
 	vector<Lumiere> LumieresScenes;
-	LumieresScenes.push_back(light);
+	//LumieresScenes.push_back(light);
+	LumieresScenes.push_back(posLumierSurfacique);
 	LumieresScenes.push_back(posLumierSurfacique);
 
 	Vec3<double> positionPerspective{ 300, 300, -1000 };
@@ -167,7 +178,11 @@ int main() {
 						}
 
 						if (!rebondIntersecte_min.has_value()) {
-							//pix_col = pix_col + ((LumieresScenes[l].couleur) * dt / norm(DirectionLumiere) * LumieresScenes[l].intensite);
+							pix_col = pix_col + objetsScenes[index].couleur * lightSu.couleur * dt / (norm(DirectionLumiere) * LumieresScenes.size() * nbLumieresSurface);
+						}
+						//test si une sphere a intersecter un objet derriere la lumiere 
+						else if(rebondIntersecte_min.value() >= norm(DirectionLumiere))
+						{
 							pix_col = pix_col + objetsScenes[index].couleur * lightSu.couleur * dt / (norm(DirectionLumiere) * LumieresScenes.size() * nbLumieresSurface);
 						}
 						else
