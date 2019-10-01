@@ -88,7 +88,8 @@ int main() {
 	//Sphere spheresol{ 9500, Vec3<double>{-10000, 0, 0}, red };
 
 	Lumiere light{ Vec3<double>{ 590, 300, 200}, Vec3<double>{ 255, 255, 255}, 100 };
-	Lumiere light1{ Vec3<double>{ 590, 10, 100}, Vec3<double>{ 255, 255, }, 400 };
+	//Lumiere light1{ Vec3<double>{ 590, 10, 100}, Vec3<double>{ 255, 255, }, 400 };
+	Lumiere posLumierSurfacique{ Vec3<double>{ 250,20,150 }, Vec3<double>{ 255, 255, 255}, 100 };
 
 
 	//ne tête du fichier ppm
@@ -104,24 +105,12 @@ int main() {
 	objetsScenes.push_back(spherefond);
 	//objetsScenes.push_back(spheresol);
 
+	//ajout des Lumieres
 	vector<Lumiere> LumieresScenes;
 	LumieresScenes.push_back(light);
-	//LumieresScenes.push_back(light1);
-;
+	LumieresScenes.push_back(posLumierSurfacique);
 
-
-	//lumiere surfacique
-	Vec3<double> posLumierSurfacique { 250,20,150 };
-	for (int i = 0; i < nbLumieresSurface; i++)
-	{
-		int randX = rand() % 20;
-		int randY = rand() % 19;
-		int randZ = rand() % 19;
-		Lumiere lightSu{ Vec3<double>{posLumierSurfacique.x + randX,posLumierSurfacique.y + randY,posLumierSurfacique.z + randZ}, white, 5 };
-		LumieresScenes.push_back(lightSu);
-	}
-
-	Vec3<double> positionPerspective{ 300, 300, 600 };
+	Vec3<double> positionPerspective{ 300, 300, -1000 };
 
 	for (int y = 0; y < H; ++y) {
 		for (int x = 0; x < W; ++x) {
@@ -130,7 +119,7 @@ int main() {
 			//cout << directionCamera.x << endl;
 			Ray ray{
 				Vec3<double>{(double)x, (double)y, 0},
-				Vec3<double>{0,0,1}
+				directionCamera
 			};
 
 			
@@ -147,35 +136,47 @@ int main() {
 
 			if (t_min.has_value()) {
 				for (int l = 0; l < LumieresScenes.size(); l++) {
-					Vec3<double> posIntersection = ray.position + (ray.direction * (t_min.value() + 0.1));
-					Vec3<double> DirectionLumiere = LumieresScenes[l].position - posIntersection;
-					Vec3<double> normalIntersection = normalize(posIntersection - objetsScenes[index].position);
-					double dt = abs(dot(normalize(DirectionLumiere), normalIntersection));
+					for (int h = 0; h < nbLumieresSurface; h++) {
 
-					//ajout de 0.1 pour pas que la sphere se teste elle-même
-					Ray rebond{
-						posIntersection + (normalize(DirectionLumiere)),
-						normalize(DirectionLumiere)
-					};
+						//generation d'une lumiere aleatoire pour les lumieres surfaciques
+						int randX = rand() % 20;
+						int randY = rand() % 19;
+						int randZ = rand() % 19;
+						Lumiere lightSu{ Vec3<double>{LumieresScenes[l].position.x + randX,
+													  LumieresScenes[l].position.y + randY,
+													  LumieresScenes[l].position.z + randZ}, white, 5 };
 
-					//test s'il y a une sphere entre la sphere testée et la lumiere
-					std::optional<double> rebondIntersecte_min = nullopt;
-					for (int i = 0; i < objetsScenes.size(); i++) {
-						std::optional<double> t = intersect(objetsScenes[i], rebond);
-						if ((!rebondIntersecte_min.has_value()) || (t.has_value() && t.value() < rebondIntersecte_min.value())) {
-							rebondIntersecte_min = t;
+						Vec3<double> posIntersection = ray.position + (ray.direction * (t_min.value() + 0.1));
+						Vec3<double> DirectionLumiere = lightSu.position - posIntersection;
+						Vec3<double> normalIntersection = normalize(posIntersection - objetsScenes[index].position);
+						double dt = abs(dot(normalize(DirectionLumiere), normalIntersection));
+
+						//ajout de 0.1 pour pas que la sphere se teste elle-même
+						Ray rebond{
+							posIntersection + (normalize(DirectionLumiere)),
+							normalize(DirectionLumiere)
+						};
+
+						//test s'il y a une sphere entre la sphere testée et la lumiere
+						std::optional<double> rebondIntersecte_min = nullopt;
+						for (int i = 0; i < objetsScenes.size(); i++) {
+							std::optional<double> t = intersect(objetsScenes[i], rebond);
+							if ((!rebondIntersecte_min.has_value()) || (t.has_value() && t.value() < rebondIntersecte_min.value())) {
+								rebondIntersecte_min = t;
+							}
+						}
+
+						if (!rebondIntersecte_min.has_value()) {
+							//pix_col = pix_col + ((LumieresScenes[l].couleur) * dt / norm(DirectionLumiere) * LumieresScenes[l].intensite);
+							pix_col = pix_col + objetsScenes[index].couleur * lightSu.couleur * dt / (norm(DirectionLumiere) * LumieresScenes.size() * nbLumieresSurface);
+						}
+						else
+						{
+							pix_col = black + pix_col;
 						}
 					}
-
-					if (!rebondIntersecte_min.has_value()) {
-						//pix_col = pix_col + ((LumieresScenes[l].couleur) * dt / norm(DirectionLumiere) * LumieresScenes[l].intensite);
-						pix_col = pix_col + objetsScenes[index].couleur * LumieresScenes[l].couleur * dt / (norm(DirectionLumiere) * LumieresScenes.size());
-					}
-					else
-					{
-						pix_col = black + pix_col;
-					}
 				}
+
 			}
 			
 			clamp255(pix_col);
