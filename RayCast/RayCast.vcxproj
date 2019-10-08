@@ -158,6 +158,7 @@
     <ClCompile Include="RayCast.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="RayCast.h" />
     <ClInclude Include="Vector.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />

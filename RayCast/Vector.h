@@ -95,3 +95,13 @@ void clamp255(Vec3<T>& col) {
 	col.z = (col.z > 255) ? 255 : (col.z < 0) ? 0 : col.z;
 }
 
+template<typename T>
+void debugLog(const Vec3<T>& v) {
+	std::cout << "x : " << v.x << " y : " << v.y << " z : " << v.z << std::endl;
+}
+
+float random_between_two_float(float min, float max)
+{
+	return (min + 1) + (((float)rand()) / (float)RAND_MAX) * (max - (min + 1));
+}
+
