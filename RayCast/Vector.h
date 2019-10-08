@@ -38,6 +38,12 @@ Vec3<T> operator/(const Vec3<T>& a, double b) {
 	return Vec3<T>{ a.x / b, a.y / b, a.z / b };
 };
 
+//Operateur diviseur avec un scalaire
+template<typename T>
+Vec3<T> operator/( double b, const Vec3<T>& a) {
+	return Vec3<T>{ b / a.x, b / a.y, b/a.z };
+};
+
 //Operateur de soustraction
 template<typename T>
 Vec3<T> operator-(const Vec3<T>& a, const Vec3<T>& b) {

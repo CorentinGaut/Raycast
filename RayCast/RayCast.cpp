@@ -3,8 +3,10 @@
 #include <stdio.h>
 #include <fstream>
 #include <math.h>
-#include <optional>
 #include "RayCast.h"
+#include <optional>
+#include <variant>
+
 
 
 Vec3<double> pix_col(black);
@@ -35,6 +37,7 @@ std::optional<double> intersect(Sphere S, Ray L) {
 	}
 }
 
+
 Vec3<double> RayCast(Ray ray,int nbRebonds) {
 	Vec3<double> couleur = black;
 	Vec3<double> pix_col = black;
@@ -46,6 +49,7 @@ Vec3<double> RayCast(Ray ray,int nbRebonds) {
 		std::optional<double> t = intersect(objetsScenes[i], ray);
 		if ((!t_min.has_value() && t.has_value()) || (t.has_value() && t.value() < t_min.value())) {
 			index = i;
+			indexAlbedo = i;
 			t_min = t;
 		}
 	}
@@ -115,7 +119,7 @@ Vec3<double> RayCast(Ray ray,int nbRebonds) {
 			}
 		}
 		if (rb < rebondMax) {
-			pix_col = (couleur * (1 - 0.3)) + (RayCast(rebondLumiereIndirect, rb) * 0.8);
+			pix_col = (couleur * (1 - objetsScenes[index].albedo)) + (RayCast(rebondLumiereIndirect, rb) * objetsScenes[index].albedo);
 		}
 	}
 
@@ -131,18 +135,27 @@ int main() {
 	//----------------------ajout des spheres----------------------
 	objetsScenes.push_back(sphere);
 	objetsScenes.push_back(sphere1);
+	objetsScenes.push_back(sphere2);
 	objetsScenes.push_back(spherefond);
 	objetsScenes.push_back(spheresol);
 	objetsScenes.push_back(sphereplafond);
 	objetsScenes.push_back(sphereDroit);
 	objetsScenes.push_back(spheregauche);
+	objetsScenes.push_back(spheredevant);
 
 	//----------------------ajout des Lumieres----------------------
 	//LumieresScenes.push_back(light);
 	LumieresScenes.push_back(posLumierSurfacique);
 	LumieresScenes.push_back(posLumierSurfacique);
+	LumieresScenes.push_back(posLumierSurfacique2);
+	LumieresScenes.push_back(posLumierSurfacique3);
+	LumieresScenes.push_back(posLumierSurfacique3);
+	LumieresScenes.push_back(posLumierSurfacique3);
 
 	//----------------------Debut du dessin-------------------------
+
+	//https://en.cppreference.com/w/cpp/utility/variant
+
 
 	for (int y = 0; y < H; ++y) {
 		for (int x = 0; x < W; ++x) {
