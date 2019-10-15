@@ -1,13 +1,8 @@
-#include <fstream>
-#include <iostream>
-#include <stdio.h>
-#include <fstream>
+
 #include <math.h>
 #include "RayCast.h"
 #include <optional>
 #include <variant>
-
-
 
 Vec3<double> pix_col(black);
 
@@ -38,7 +33,121 @@ std::optional<double> intersect(Sphere S, Ray L) {
 }
 
 
-Vec3<double> RayCast(Ray ray,int nbRebonds) {
+
+optional<double> intersectBox(Nodes n, Ray r) {
+	Vec3<double> dir = 1.0 / r.direction;
+
+	// lb is the corner of AABB with minimal coordinates - left bottom, rt is maximal corner
+	// r.org is origin of ray
+	double t1 = (n.bb.minPos.x - r.position.x) * dir.x;
+	double t2 = (n.bb.maxPos.x - r.position.x) * dir.x;
+	double t3 = (n.bb.minPos.y - r.position.y) * dir.y;
+	double t4 = (n.bb.maxPos.y - r.position.y) * dir.y;
+	double t5 = (n.bb.minPos.z - r.position.z) * dir.z;
+	double t6 = (n.bb.maxPos.z - r.position.z) * dir.z;
+
+	float tmin = max(max(min(t1, t2), min(t3, t4)), min(t5, t6));
+	float tmax = min(min(max(t1, t2), max(t3, t4)), max(t5, t6));
+
+	// if tmax < 0, ray (line) is intersecting AABB, but the whole AABB is behind us
+	if (tmax < 0)
+	{
+		return nullopt;
+	}
+
+	// if tmin > tmax, ray doesn't intersect AABB
+	if (tmin > tmax)
+	{
+		return nullopt;
+	}
+	return tmin;
+}
+
+
+
+BoundingBox createcoordBoundingBox(vector<Sphere> listObjets) {
+	double maxX = 0, minX = 0;
+	double maxY = 0, minY = 0;
+	double maxZ = 0, minZ = 0;
+
+	BoundingBox b;
+	for (int i = 0; i < listObjets.size(); i++)
+	{
+		double maxPosx = listObjets[i].position.x + listObjets[i].rayon;
+		double maxPosy = listObjets[i].position.y + listObjets[i].rayon;
+		double maxPosz = listObjets[i].position.z + listObjets[i].rayon;
+
+		double minPosx = listObjets[i].position.x - listObjets[i].rayon;
+		double minPosy = listObjets[i].position.y - listObjets[i].rayon;
+		double minPosz = listObjets[i].position.z - listObjets[i].rayon;
+
+		//Test du max
+		if (maxPosx > maxX) {
+			maxX = maxPosx;
+		}
+		if (maxPosy > maxY) {
+			maxY = maxPosy;
+		}
+		if (maxPosz > maxZ) {
+			maxZ = maxPosz;
+		}
+		//test du min 
+		if (minPosx < minX) {
+			minX = minPosx;
+		}
+		if (minPosy > minY) {
+			minY = minPosy;
+		}
+		if (minPosz > minZ) {
+			minZ = minPosz;
+		}
+	}
+	b.maxPos = { maxX,maxY,maxZ };
+	b.minPos = { minX,minY,minZ };
+
+	return b;
+}
+
+int splitSphere(vector<Sphere> listObjets) {
+	int index = (int)ceil(listObjets.size() / 2);
+	return index;
+}
+
+variant<Nodes*, Leaf> createBVH(vector<Sphere> listObjetsSplit) {
+
+	// creer les boundingbox pour chaque sphere
+	if (listObjetsSplit.size() == 1) {
+		Leaf l;
+		l.sphere = listObjetsSplit[0];
+		return l;
+	}
+	else {
+		int index = splitSphere(listObjetsSplit);
+
+		vector<Sphere> list1;
+		for (int i = 0; i < index; i++) {
+			list1.push_back(listObjetsSplit[i]);
+		}
+
+		vector<Sphere> list2;
+		for (int i = index; i < listObjetsSplit.size(); i++) {
+			list2.push_back(listObjetsSplit[i]);
+		}
+
+		Vec3<double> * bbmax;
+		Vec3<double> * bbmin;
+
+		BoundingBox b = createcoordBoundingBox(list1);
+
+		variant<Nodes*, Leaf> first = createBVH(list1);
+		variant<Nodes*, Leaf> second = createBVH(list2);
+
+		return new Nodes(first, second,b);
+	}
+}
+
+
+Vec3<double> RayCast(Ray ray,int nbRebonds,variant<Nodes*,Leaf> BVH) {
 	Vec3<double> couleur = black;
 	Vec3<double> pix_col = black;
 	int rb = nbRebonds + 1;
@@ -65,7 +174,7 @@ Vec3<double> RayCast(Ray ray,int nbRebonds) {
 			Ray rebond{ posIntersection,
 						rebondMiroir };
 
-			return RayCast(rebond,rb);
+			return RayCast(rebond,rb,BVH);
 		}
 
 		Vec3<double> normalIntersection = normalize(posIntersection - objetsScenes[index].position);
@@ -119,13 +228,12 @@ Vec3<double> RayCast(Ray ray,int nbRebonds) {
 			}
 		}
 		if (rb < rebondMax) {
-			pix_col = (couleur * (1 - objetsScenes[index].albedo)) + (RayCast(rebondLumiereIndirect, rb) * objetsScenes[index].albedo);
+			pix_col = (couleur * (1 - objetsScenes[index].albedo)) + (RayCast(rebondLumiereIndirect, rb, BVH) * objetsScenes[index].albedo);
 		}
 	}
 
 	return pix_col;
 }
-
 
 int main() {
 	//en tête du fichier ppm
@@ -153,9 +261,9 @@ int main() {
 	LumieresScenes.push_back(posLumierSurfacique3);
 
 	//----------------------Debut du dessin-------------------------
-
 	//https://en.cppreference.com/w/cpp/utility/variant
 
+	std::variant<Nodes*,Leaf> final = createBVH(objetsScenes);
 
 	for (int y = 0; y < H; ++y) {
 		for (int x = 0; x < W; ++x) {
@@ -168,7 +276,7 @@ int main() {
 				directionCamera
 			};
 
-			Vec3<double> col = RayCast(ray,0);
+			Vec3<double> col = RayCast(ray, 0, final);
 
 			clamp255(col);
 			out << (int)col.x << ' '

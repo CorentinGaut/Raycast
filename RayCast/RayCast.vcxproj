@@ -155,10 +155,12 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClCompile Include="Nodes.cpp" />
     <ClCompile Include="RayCast.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="BoundingBox.h" />
+    <ClInclude Include="Nodes.h" />
     <ClInclude Include="RayCast.h" />
     <ClInclude Include="Vector.h" />
   </ItemGroup>

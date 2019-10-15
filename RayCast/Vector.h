@@ -68,8 +68,6 @@ Vec3<T> operator+(const Vec3<T>& a, double b) {
 	return Vec3<T>{ a.x + b, a.y + b, a.z + b };
 };
 
-
-
 //Calcul de la nomre d'un vecteur
 template<typename T>
 double norm(const Vec3<T>& v) {
@@ -106,7 +104,7 @@ void debugLog(const Vec3<T>& v) {
 	std::cout << "x : " << v.x << " y : " << v.y << " z : " << v.z << std::endl;
 }
 
-float random_between_two_float(float min, float max)
+inline float random_between_two_float(float min, float max)
 {
 	return (min + 1) + (((float)rand()) / (float)RAND_MAX) * (max - (min + 1));
 }

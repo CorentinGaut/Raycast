@@ -1,9 +1,20 @@
 ﻿  RayCast.cpp
-D:\Gamagora\Raycast\RayCast\RayCast.h(32): warning C4244: 'initialisation' : conversion de 'double' en 'int', perte possible de données
-D:\Gamagora\Raycast\RayCast\RayCast.cpp(73): warning C4305: 'argument' : troncation de 'double' à 'float'
+D:\Gamagora\Raycast\RayCast\RayCast.cpp(49): warning C4244: 'initialisation' : conversion de 'const _Ty' en 'float', perte possible de données
+          with
+          [
+              _Ty=double
+          ]
+D:\Gamagora\Raycast\RayCast\RayCast.cpp(50): warning C4244: 'initialisation' : conversion de 'const _Ty' en 'float', perte possible de données
+          with
+          [
+              _Ty=double
+          ]
+D:\Gamagora\Raycast\RayCast\RayCast.cpp(138): warning C4101: 'bbmin' : variable locale non référencée
+D:\Gamagora\Raycast\RayCast\RayCast.cpp(137): warning C4101: 'bbmax' : variable locale non référencée
+D:\Gamagora\Raycast\RayCast\RayCast.cpp(182): warning C4305: 'argument' : troncation de 'double' à 'float'
   Génération de code en cours
-  16 of 294 functions ( 5.4%) were compiled, the rest were copied from previous compilation.
-    1 functions were new in current compilation
-    0 functions had inline decision re-evaluated but remain unchanged
+  56 of 294 functions (19.0%) were compiled, the rest were copied from previous compilation.
+    0 functions were new in current compilation
+    24 functions had inline decision re-evaluated but remain unchanged
   Fin de la génération du code
   RayCast.vcxproj -> D:\Gamagora\Raycast\x64\Release\RayCast.exe
