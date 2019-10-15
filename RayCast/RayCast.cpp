@@ -3,6 +3,7 @@
 #include "RayCast.h"
 #include <optional>
 #include <variant>
+#include <tuple>
 
 Vec3<double> pix_col(black);
 
@@ -235,6 +236,125 @@ Vec3<double> RayCast(Ray ray,int nbRebonds,variant<Nodes*,Leaf> BVH) {
 	return pix_col;
 }
 
+std::tuple<optional<double>,Sphere> calculSphere(Ray ray, variant<Nodes*, Leaf> BVH) {
+	std::add_pointer_t<Nodes> node = std::get_if<Nodes>(&BVH);
+	std::add_pointer_t<Leaf> leaf = std::get_if<Leaf>(&BVH);
+
+	if (leaf != nullptr)
+	{
+		optional<double> t = intersect(leaf->sphere, ray);
+		std::tuple<optional<double>, Sphere> result;
+		result = make_tuple(t, leaf->sphere);
+		return result;
+	}
+	else if (node != nullptr)
+	{
+		std::optional<double> t = intersectBox(*node, ray);
+		if (t.has_value()) {
+
+			std::tuple<optional<double>, Sphere> first = calculSphere(ray, node->first);
+			std::tuple<optional<double>, Sphere> second = calculSphere(ray, node->second);
+
+			if (get<0>(first).has_value() && get<0>(second).has_value() && get<0>(first).value() < get<0>(second).value()) {
+				return first;
+			}
+			else if(get<0>(first).has_value() && get<0>(second).has_value() && get<0>(first).value() > get<0>(second).value())
+			{
+				return second;
+			}
+			else if (get<0>(first).has_value() && !get<0>(second).has_value())
+			{
+				return first;
+			}
+			else if (!get<0>(first).has_value() && get<0>(second).has_value())
+			{
+				return second;
+			}
+			else {
+				std::tuple<optional<double>, Sphere> resultNull;
+				return resultNull;
+			}
+		}
+	}
+}
+
+Vec3<double> RayCastBoundingBox(Ray ray, int nbRebonds, variant<Nodes*, Leaf> BVH) {
+	Vec3<double> couleur = black;
+	Vec3<double> pix_col = black;
+	int rb = nbRebonds + 1;
+
+	//calcul du t_min entre les spheres pour savoir s'il y en a une devant l'autre de la camera
+	//tuple<optional<double>, Sphere> result = calculSphere(ray, BVH);
+	//std::optional<double> t_min = get<0>(result);
+	/*
+	if (t_min.has_value()) {
+		//sphere miroir
+		Sphere obj = get<1>(result);
+		Vec3<double> posIntersection = ray.position + (ray.direction * (t_min.value() - 0.1));
+		if (obj.albedo >= 1) {
+
+			Vec3<double> normalIntersection = posIntersection - obj.position;
+			Vec3<double> rebondMiroir = normalIntersection * 2 * dot(ray.direction * (-1), normalize(normalIntersection)) + ray.direction;
+
+			Ray rebond{ posIntersection,
+						rebondMiroir };
+
+			return RayCast(rebond, rb, BVH);
+		}
+
+		Vec3<double> normalIntersection = normalize(posIntersection - obj.position);
+
+		Vec3<double> randomdir{ random_between_two_float(-0.0001,0.0001),random_between_two_float(-0.0001, 0.0001),random_between_two_float(-0.0001, 0.0001) };
+		Vec3<double> rebondMiroir = normalIntersection * 2 * dot(ray.direction * (-1), normalize(normalIntersection)) + ray.direction;
+		Ray rebondLumiereIndirect = { posIntersection,
+									  normalize(rebondMiroir) };
+
+		for (int l = 0; l < LumieresScenes.size(); l++) {
+			for (int h = 0; h < nbLumieresSurface; h++) {
+
+				//generation d'une lumiere aleatoire pour les lumieres surfaciques
+				int randX = rand() % 20;
+				int randY = rand() % 19;
+				int randZ = rand() % 19;
+				Lumiere lightSu{ Vec3<double>{LumieresScenes[l].position.x + randX,
+											  LumieresScenes[l].position.y + randY,
+											  LumieresScenes[l].position.z + randZ}, white, 5 };
+
+				Vec3<double> DirectionLumiere = lightSu.position - posIntersection;
+				double dt = abs(dot(normalize(DirectionLumiere), normalIntersection));
+
+				//ajout de 0.1 pour pas que la sphere se teste elle-même
+				Ray rebond{
+					posIntersection + (normalize(DirectionLumiere)),
+					normalize(DirectionLumiere)
+				};
+
+				//test s'il y a une sphere entre la sphere testée et la lumiere
+				tuple<optional<double>, Sphere> resultRebond = calculSphere(rebond, BVH);
+				std::optional<double> rebondIntersecte_min = get<0>(result);
+
+				if (!rebondIntersecte_min.has_value()) {
+					couleur = couleur + obj.couleur * lightSu.couleur * dt / (norm(DirectionLumiere) * LumieresScenes.size() * nbLumieresSurface);
+				}
+				//test si une sphere a intersecter un objet derriere la lumiere 
+				else if (rebondIntersecte_min.value() >= norm(DirectionLumiere))
+				{
+					couleur = couleur + obj.couleur * lightSu.couleur * dt / (norm(DirectionLumiere) * LumieresScenes.size() * nbLumieresSurface);
+				}
+				else
+				{
+					couleur = black + couleur;
+				}
+			}
+		}
+		if (rb < rebondMax) {
+			pix_col = (couleur * (1 - obj.albedo)) + (RayCast(rebondLumiereIndirect, rb, BVH) * obj.albedo);
+		}
+	}*/
+
+	return pix_col;
+}
+
 int main() {
 	//en tête du fichier ppm
 	std::ofstream out("out.ppm");
@@ -276,7 +396,7 @@ int main() {
 				directionCamera
 			};
 
-			Vec3<double> col = RayCast(ray, 0, final);
+			Vec3<double> col = RayCastBoundingBox(ray, 0, final);
 
 			clamp255(col);
 			out << (int)col.x << ' '

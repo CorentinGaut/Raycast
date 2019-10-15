@@ -1,20 +1,32 @@
 ﻿  RayCast.cpp
-D:\Gamagora\Raycast\RayCast\RayCast.cpp(49): warning C4244: 'initialisation' : conversion de 'const _Ty' en 'float', perte possible de données
-          with
-          [
-              _Ty=double
-          ]
 D:\Gamagora\Raycast\RayCast\RayCast.cpp(50): warning C4244: 'initialisation' : conversion de 'const _Ty' en 'float', perte possible de données
           with
           [
               _Ty=double
           ]
-D:\Gamagora\Raycast\RayCast\RayCast.cpp(138): warning C4101: 'bbmin' : variable locale non référencée
-D:\Gamagora\Raycast\RayCast\RayCast.cpp(137): warning C4101: 'bbmax' : variable locale non référencée
-D:\Gamagora\Raycast\RayCast\RayCast.cpp(182): warning C4305: 'argument' : troncation de 'double' à 'float'
-  Génération de code en cours
-  56 of 294 functions (19.0%) were compiled, the rest were copied from previous compilation.
-    0 functions were new in current compilation
-    24 functions had inline decision re-evaluated but remain unchanged
-  Fin de la génération du code
-  RayCast.vcxproj -> D:\Gamagora\Raycast\x64\Release\RayCast.exe
+D:\Gamagora\Raycast\RayCast\RayCast.cpp(51): warning C4244: 'initialisation' : conversion de 'const _Ty' en 'float', perte possible de données
+          with
+          [
+              _Ty=double
+          ]
+D:\Gamagora\Raycast\RayCast\RayCast.cpp(139): warning C4101: 'bbmin' : variable locale non référencée
+D:\Gamagora\Raycast\RayCast\RayCast.cpp(138): warning C4101: 'bbmax' : variable locale non référencée
+D:\Gamagora\Raycast\RayCast\RayCast.cpp(183): warning C4305: 'argument' : troncation de 'double' à 'float'
+C:\Program Files (x86)\Microsoft Visual Studio\2019\Professional\VC\Tools\MSVC\14.20.27508\include\variant(1367): error C2338: get_if<T>(variant<Types...> *) requires T to occur exactly once in Types. (N4762 19.7.5 [variant.get]/9)
+  D:\Gamagora\Raycast\RayCast\RayCast.cpp(240): note: voir la référence à l'instanciation de la fonction modèle 'Nodes *std::get_if<Nodes,Nodes*,Leaf>(std::variant<Nodes *,Leaf> *) noexcept' en cours de compilation
+C:\Program Files (x86)\Microsoft Visual Studio\2019\Professional\VC\Tools\MSVC\14.20.27508\include\variant(1351): error C2338: variant index out of bounds
+  C:\Program Files (x86)\Microsoft Visual Studio\2019\Professional\VC\Tools\MSVC\14.20.27508\include\variant(1365): note: voir la référence à l'instanciation de la fonction modèle 'auto std::get_if<18446744073709551615,Nodes*,Leaf>(std::variant<Nodes *,Leaf> *) noexcept' en cours de compilation
+C:\Program Files (x86)\Microsoft Visual Studio\2019\Professional\VC\Tools\MSVC\14.20.27508\include\variant(628): error C2039: '_Tail' : n'est pas membre de 'std::_Variant_storage_<true>'
+  C:\Program Files (x86)\Microsoft Visual Studio\2019\Professional\VC\Tools\MSVC\14.20.27508\include\variant(448): note: voir la déclaration de 'std::_Variant_storage_<true>'
+  C:\Program Files (x86)\Microsoft Visual Studio\2019\Professional\VC\Tools\MSVC\14.20.27508\include\variant(1350): note: voir la référence à l'instanciation de la fonction modèle 'decltype(auto) std::_Variant_raw_get<18446744073709551615,std::_Variant_storage_<true,Nodes *,Leaf>&>(_Storage) noexcept' en cours de compilation
+          with
+          [
+              _Storage=std::_Variant_storage_<true,Nodes *,Leaf> &
+          ]
+C:\Program Files (x86)\Microsoft Visual Studio\2019\Professional\VC\Tools\MSVC\14.20.27508\include\variant(626): error C2672: 'std::_Variant_raw_get' : fonction correspondante surchargée introuvable
+C:\Program Files (x86)\Microsoft Visual Studio\2019\Professional\VC\Tools\MSVC\14.20.27508\include\variant(1352): error C2672: 'addressof' : fonction correspondante surchargée introuvable
+C:\Program Files (x86)\Microsoft Visual Studio\2019\Professional\VC\Tools\MSVC\14.20.27508\include\variant(1350): error C2893: La spécialisation du modèle de fonction '_Ty *std::addressof(_Ty &) noexcept' a échoué
+  C:\Program Files (x86)\Microsoft Visual Studio\2019\Professional\VC\Tools\MSVC\14.20.27508\include\variant(1350): note: Avec les arguments template suivants :
+  C:\Program Files (x86)\Microsoft Visual Studio\2019\Professional\VC\Tools\MSVC\14.20.27508\include\variant(1350): note: '_Ty=void'
+C:\Program Files (x86)\Microsoft Visual Studio\2019\Professional\VC\Tools\MSVC\14.20.27508\include\variant(1365): error C2440: 'return' : impossible de convertir de 'void' en 'Nodes *'
+  C:\Program Files (x86)\Microsoft Visual Studio\2019\Professional\VC\Tools\MSVC\14.20.27508\include\variant(1365): note: Les expressions de type void ne peuvent pas être converties en d'autres types
