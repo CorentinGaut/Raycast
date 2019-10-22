@@ -67,9 +67,9 @@ optional<double> intersectBox(Nodes n, Ray r) {
 
 
 BoundingBox createcoordBoundingBox(vector<Sphere> listObjets) {
-	double maxX = 0, minX = 0;
-	double maxY = 0, minY = 0;
-	double maxZ = 0, minZ = 0;
+	double maxX = INT16_MIN, minX = INT16_MAX;
+	double maxY = INT16_MIN, minY = INT16_MAX;
+	double maxZ = INT16_MIN, minZ = INT16_MAX;
 
 	BoundingBox b;
 	for (int i = 0; i < listObjets.size(); i++)
@@ -96,10 +96,10 @@ BoundingBox createcoordBoundingBox(vector<Sphere> listObjets) {
 		if (minPosx < minX) {
 			minX = minPosx;
 		}
-		if (minPosy > minY) {
+		if (minPosy < minY) {
 			minY = minPosy;
 		}
-		if (minPosz > minZ) {
+		if (minPosz < minZ) {
 			minZ = minPosz;
 		}
 	}
@@ -124,6 +124,7 @@ variant<Nodes*, Leaf> createBVH(vector<Sphere> listObjetsSplit) {
 	}
 	else {
 		int index = splitSphere(listObjetsSplit);
+		BoundingBox b = createcoordBoundingBox(listObjetsSplit);
 
 		vector<Sphere> list1;
 		for (int i = 0; i < index; i++) {
@@ -135,10 +136,7 @@ variant<Nodes*, Leaf> createBVH(vector<Sphere> listObjetsSplit) {
 			list2.push_back(listObjetsSplit[i]);
 		}
 
-		Vec3<double> * bbmax;
-		Vec3<double> * bbmin;
-
-		BoundingBox b = createcoordBoundingBox(list1);
+		
 
 		variant<Nodes*, Leaf> first = createBVH(list1);
 		variant<Nodes*, Leaf> second = createBVH(list2);
@@ -237,7 +235,7 @@ Vec3<double> RayCast(Ray ray,int nbRebonds,variant<Nodes*,Leaf> BVH) {
 }
 
 std::tuple<optional<double>,Sphere> calculSphere(Ray ray, variant<Nodes*, Leaf> BVH) {
-	std::add_pointer_t<Nodes> node = std::get_if<Nodes>(&BVH);
+	std::add_pointer_t<Nodes*> node = std::get_if<Nodes*>(&BVH);
 	std::add_pointer_t<Leaf> leaf = std::get_if<Leaf>(&BVH);
 
 	if (leaf != nullptr)
@@ -249,11 +247,11 @@ std::tuple<optional<double>,Sphere> calculSphere(Ray ray, variant<Nodes*, Leaf> 
 	}
 	else if (node != nullptr)
 	{
-		std::optional<double> t = intersectBox(*node, ray);
+		std::optional<double> t = intersectBox(*(*node), ray);
 		if (t.has_value()) {
 
-			std::tuple<optional<double>, Sphere> first = calculSphere(ray, node->first);
-			std::tuple<optional<double>, Sphere> second = calculSphere(ray, node->second);
+			std::tuple<optional<double>, Sphere> first = calculSphere(ray, (*(*node)).first);
+			std::tuple<optional<double>, Sphere> second = calculSphere(ray, (*(*node)).second);
 
 			if (get<0>(first).has_value() && get<0>(second).has_value() && get<0>(first).value() < get<0>(second).value()) {
 				return first;
@@ -284,9 +282,9 @@ Vec3<double> RayCastBoundingBox(Ray ray, int nbRebonds, variant<Nodes*, Leaf> BV
 	int rb = nbRebonds + 1;
 
 	//calcul du t_min entre les spheres pour savoir s'il y en a une devant l'autre de la camera
-	//tuple<optional<double>, Sphere> result = calculSphere(ray, BVH);
-	//std::optional<double> t_min = get<0>(result);
-	/*
+	tuple<optional<double>, Sphere> result = calculSphere(ray, BVH);
+	std::optional<double> t_min = get<0>(result);
+	
 	if (t_min.has_value()) {
 		//sphere miroir
 		Sphere obj = get<1>(result);
@@ -313,9 +311,9 @@ Vec3<double> RayCastBoundingBox(Ray ray, int nbRebonds, variant<Nodes*, Leaf> BV
 			for (int h = 0; h < nbLumieresSurface; h++) {
 
 				//generation d'une lumiere aleatoire pour les lumieres surfaciques
-				int randX = rand() % 20;
-				int randY = rand() % 19;
-				int randZ = rand() % 19;
+				int randX = rand() % 50;
+				int randY = rand() % 50;
+				int randZ = rand() % 50;
 				Lumiere lightSu{ Vec3<double>{LumieresScenes[l].position.x + randX,
 											  LumieresScenes[l].position.y + randY,
 											  LumieresScenes[l].position.z + randZ}, white, 5 };
@@ -334,7 +332,7 @@ Vec3<double> RayCastBoundingBox(Ray ray, int nbRebonds, variant<Nodes*, Leaf> BV
 				std::optional<double> rebondIntersecte_min = get<0>(result);
 
 				if (!rebondIntersecte_min.has_value()) {
-					couleur = couleur + obj.couleur * lightSu.couleur * dt / (norm(DirectionLumiere) * LumieresScenes.size() * nbLumieresSurface);
+					couleur = couleur + obj.couleur * lightSu.couleur * dt / (norm(DirectionLumiere) * LumieresScenes.size() * nbLumieresSurface * LumieresScenes[l].intensite);
 				}
 				//test si une sphere a intersecter un objet derriere la lumiere 
 				else if (rebondIntersecte_min.value() >= norm(DirectionLumiere))
@@ -350,7 +348,7 @@ Vec3<double> RayCastBoundingBox(Ray ray, int nbRebonds, variant<Nodes*, Leaf> BV
 		if (rb < rebondMax) {
 			pix_col = (couleur * (1 - obj.albedo)) + (RayCast(rebondLumiereIndirect, rb, BVH) * obj.albedo);
 		}
-	}*/
+	}
 
 	return pix_col;
 }
@@ -364,26 +362,27 @@ int main() {
 	objetsScenes.push_back(sphere);
 	objetsScenes.push_back(sphere1);
 	objetsScenes.push_back(sphere2);
-	objetsScenes.push_back(spherefond);
+	objetsScenes.push_back(sphere3);
+	objetsScenes.push_back(sphere4);
+	/*objetsScenes.push_back(spherefond);
 	objetsScenes.push_back(spheresol);
 	objetsScenes.push_back(sphereplafond);
 	objetsScenes.push_back(sphereDroit);
 	objetsScenes.push_back(spheregauche);
-	objetsScenes.push_back(spheredevant);
+	objetsScenes.push_back(spheredevant);*/
 
 	//----------------------ajout des Lumieres----------------------
 	//LumieresScenes.push_back(light);
-	LumieresScenes.push_back(posLumierSurfacique);
+	//LumieresScenes.push_back(light1);
 	LumieresScenes.push_back(posLumierSurfacique);
 	LumieresScenes.push_back(posLumierSurfacique2);
-	LumieresScenes.push_back(posLumierSurfacique3);
-	LumieresScenes.push_back(posLumierSurfacique3);
 	LumieresScenes.push_back(posLumierSurfacique3);
 
 	//----------------------Debut du dessin-------------------------
 	//https://en.cppreference.com/w/cpp/utility/variant
 
 	std::variant<Nodes*,Leaf> final = createBVH(objetsScenes);
+	std::add_pointer_t<Nodes*> node = std::get_if<Nodes*>(&final);
 
 	for (int y = 0; y < H; ++y) {
 		for (int x = 0; x < W; ++x) {
