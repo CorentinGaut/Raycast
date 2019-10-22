@@ -146,94 +146,6 @@ variant<Nodes*, Leaf> createBVH(vector<Sphere> listObjetsSplit) {
 }
 
 
-Vec3<double> RayCast(Ray ray,int nbRebonds,variant<Nodes*,Leaf> BVH) {
-	Vec3<double> couleur = black;
-	Vec3<double> pix_col = black;
-	int rb = nbRebonds + 1;
-	//calcul du t_min entre les spheres pour savoir s'il y en a une devant l'autre de la camera
-	int index = 0;
-	std::optional<double> t_min = nullopt;
-	for (int i = 0; i < objetsScenes.size(); i++) {
-		std::optional<double> t = intersect(objetsScenes[i], ray);
-		if ((!t_min.has_value() && t.has_value()) || (t.has_value() && t.value() < t_min.value())) {
-			index = i;
-			indexAlbedo = i;
-			t_min = t;
-		}
-	}
-
-	if (t_min.has_value()) {
-		//sphere miroir
-		Vec3<double> posIntersection = ray.position + (ray.direction * (t_min.value() - 0.1));
-		if (objetsScenes[index].albedo >= 1) {
-			
-			Vec3<double> normalIntersection = posIntersection - objetsScenes[index].position;
-			Vec3<double> rebondMiroir = normalIntersection * 2 * dot(ray.direction * (-1), normalize(normalIntersection)) + ray.direction;
-
-			Ray rebond{ posIntersection,
-						rebondMiroir };
-
-			return RayCast(rebond,rb,BVH);
-		}
-
-		Vec3<double> normalIntersection = normalize(posIntersection - objetsScenes[index].position);
-
-		Vec3<double> randomdir{ random_between_two_float(-0.0001,0.0001),random_between_two_float(-0.0001, 0.0001),random_between_two_float(-0.0001, 0.0001) };
-		Vec3<double> rebondMiroir = normalIntersection * 2 * dot(ray.direction * (-1), normalize(normalIntersection)) + ray.direction;
-		Ray rebondLumiereIndirect = { posIntersection,
-								      normalize(rebondMiroir ) };
-
-		for (int l = 0; l < LumieresScenes.size(); l++) {
-			for (int h = 0; h < nbLumieresSurface; h++) {
-
-				//generation d'une lumiere aleatoire pour les lumieres surfaciques
-				int randX = rand() % 20;
-				int randY = rand() % 19;
-				int randZ = rand() % 19;
-				Lumiere lightSu{ Vec3<double>{LumieresScenes[l].position.x + randX,
-											  LumieresScenes[l].position.y + randY,
-											  LumieresScenes[l].position.z + randZ}, white, 5 };
-
-				Vec3<double> DirectionLumiere = lightSu.position - posIntersection;
-				double dt = abs(dot(normalize(DirectionLumiere), normalIntersection));
-
-				//ajout de 0.1 pour pas que la sphere se teste elle-même
-				Ray rebond{
-					posIntersection + (normalize(DirectionLumiere)),
-					normalize(DirectionLumiere)
-				};
-
-				//test s'il y a une sphere entre la sphere testée et la lumiere
-				std::optional<double> rebondIntersecte_min = nullopt;
-				for (int i = 0; i < objetsScenes.size(); i++) {
-					std::optional<double> t = intersect(objetsScenes[i], rebond);
-					if ((!rebondIntersecte_min.has_value()) || (t.has_value() && t.value() < rebondIntersecte_min.value())) {
-						rebondIntersecte_min = t;
-					}
-				}
-
-				if (!rebondIntersecte_min.has_value()) {
-					couleur = couleur + objetsScenes[index].couleur * lightSu.couleur * dt / (norm(DirectionLumiere) * LumieresScenes.size() * nbLumieresSurface);
-				}
-				//test si une sphere a intersecter un objet derriere la lumiere 
-				else if (rebondIntersecte_min.value() >= norm(DirectionLumiere))
-				{
-					couleur = couleur + objetsScenes[index].couleur * lightSu.couleur * dt / (norm(DirectionLumiere) * LumieresScenes.size() * nbLumieresSurface);
-				}
-				else
-				{
-					couleur = black + couleur;
-				}
-			}
-		}
-		if (rb < rebondMax) {
-			pix_col = (couleur * (1 - objetsScenes[index].albedo)) + (RayCast(rebondLumiereIndirect, rb, BVH) * objetsScenes[index].albedo);
-		}
-	}
-
-	return pix_col;
-}
-
 std::tuple<optional<double>,Sphere> calculSphere(Ray ray, variant<Nodes*, Leaf> BVH) {
 	std::add_pointer_t<Nodes*> node = std::get_if<Nodes*>(&BVH);
 	std::add_pointer_t<Leaf> leaf = std::get_if<Leaf>(&BVH);
@@ -297,7 +209,7 @@ Vec3<double> RayCastBoundingBox(Ray ray, int nbRebonds, variant<Nodes*, Leaf> BV
 			Ray rebond{ posIntersection,
 						rebondMiroir };
 
-			return RayCast(rebond, rb, BVH);
+			return RayCastBoundingBox(rebond, rb, BVH);
 		}
 
 		Vec3<double> normalIntersection = normalize(posIntersection - obj.position);
@@ -332,7 +244,7 @@ Vec3<double> RayCastBoundingBox(Ray ray, int nbRebonds, variant<Nodes*, Leaf> BV
 				std::optional<double> rebondIntersecte_min = get<0>(result);
 
 				if (!rebondIntersecte_min.has_value()) {
-					couleur = couleur + obj.couleur * lightSu.couleur * dt / (norm(DirectionLumiere) * LumieresScenes.size() * nbLumieresSurface * LumieresScenes[l].intensite);
+					couleur = couleur + obj.couleur * lightSu.couleur * dt / (norm(DirectionLumiere) * LumieresScenes.size() * nbLumieresSurface);
 				}
 				//test si une sphere a intersecter un objet derriere la lumiere 
 				else if (rebondIntersecte_min.value() >= norm(DirectionLumiere))
@@ -346,7 +258,7 @@ Vec3<double> RayCastBoundingBox(Ray ray, int nbRebonds, variant<Nodes*, Leaf> BV
 			}
 		}
 		if (rb < rebondMax) {
-			pix_col = (couleur * (1 - obj.albedo)) + (RayCast(rebondLumiereIndirect, rb, BVH) * obj.albedo);
+			pix_col = (couleur * (1 - obj.albedo)) + (RayCastBoundingBox(rebondLumiereIndirect, rb, BVH) * obj.albedo);
 		}
 	}
 
@@ -359,30 +271,37 @@ int main() {
 	out << "P3\n" << W << ' ' << H << ' ' << "255\n";
 
 	//----------------------ajout des spheres----------------------
-	objetsScenes.push_back(sphere);
+	objetsScenes.push_back(spheregauche);
 	objetsScenes.push_back(sphere1);
 	objetsScenes.push_back(sphere2);
 	objetsScenes.push_back(sphere3);
 	objetsScenes.push_back(sphere4);
+	objetsScenes.push_back(sphere5);
+	objetsScenes.push_back(sphereDroit); 
+
+
+	//----------------------ajout des Lumieres----------------------
+	LumieresScenes.push_back(light);
+	LumieresScenes.push_back(light1);
+	LumieresScenes.push_back(posLumierSurfacique);
+	LumieresScenes.push_back(posLumierSurfacique);
+	LumieresScenes.push_back(posLumierSurfacique);
+	LumieresScenes.push_back(posLumierSurfacique);
+	LumieresScenes.push_back(posLumierSurfacique2);
+	LumieresScenes.push_back(posLumierSurfacique3);
+
+
+	//----------------------Debut du dessin-------------------------
+	//https://en.cppreference.com/w/cpp/utility/variant
+
+	std::variant<Nodes*,Leaf> final = createBVH(objetsScenes);
+
 	/*objetsScenes.push_back(spherefond);
 	objetsScenes.push_back(spheresol);
 	objetsScenes.push_back(sphereplafond);
 	objetsScenes.push_back(sphereDroit);
 	objetsScenes.push_back(spheregauche);
 	objetsScenes.push_back(spheredevant);*/
-
-	//----------------------ajout des Lumieres----------------------
-	//LumieresScenes.push_back(light);
-	//LumieresScenes.push_back(light1);
-	LumieresScenes.push_back(posLumierSurfacique);
-	LumieresScenes.push_back(posLumierSurfacique2);
-	LumieresScenes.push_back(posLumierSurfacique3);
-
-	//----------------------Debut du dessin-------------------------
-	//https://en.cppreference.com/w/cpp/utility/variant
-
-	std::variant<Nodes*,Leaf> final = createBVH(objetsScenes);
-	std::add_pointer_t<Nodes*> node = std::get_if<Nodes*>(&final);
 
 	for (int y = 0; y < H; ++y) {
 		for (int x = 0; x < W; ++x) {

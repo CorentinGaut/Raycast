@@ -26,7 +26,7 @@ struct Lumiere {
 
 const int H = 600;
 const int W = 600;
-const int rebondMax = 10;
+const int rebondMax = 5;
 const int nbLumieresSurface = 300;
 const double coeffreflexion = 0.3;
 
@@ -51,11 +51,12 @@ Lumiere posLumierSurfacique2{ Vec3<double>{ 550,250,100 }, Vec3<double>{ 0, 0, 1
 Lumiere posLumierSurfacique3{ Vec3<double>{ 0,550,0 }, white, 60000 };
 
 //----------------------Objets----------------------
-Sphere sphere{ 100, Vec3<double>{150, 300, 300}, white, 0.1 };
-Sphere sphere1{ 20, Vec3<double>{400, 200, 400}, white, 0.2 };
-Sphere sphere2{ 50, Vec3<double>{350, 450, 100}, red, 0.1 };
-Sphere sphere3{ 50, Vec3<double>{500, 400, 300}, red, 0.1 };
-Sphere sphere4{ 50, Vec3<double>{75, 75, 300}, red, 0.1 };
+Sphere sphere1{ 50, Vec3<double>{75, 75, 300}, red, 0.1 };
+Sphere sphere2{ 100, Vec3<double>{150, 300, 300}, white, 0.1 };
+Sphere sphere3{ 40, Vec3<double>{350, 450, 500}, green, 0.1 };
+Sphere sphere4{ 100, Vec3<double>{500, 200, 400}, white, 0.2 };
+Sphere sphere5{ 50, Vec3<double>{500, 500, 300}, red, 0.1 };
+
 
 Sphere spherefond{ 9500, Vec3<double>{300, 300, 10100}, red, 0.2 };
 Sphere spheredevant{ 9500, Vec3<double>{300, 300, -10100}, white, 0.2 };
